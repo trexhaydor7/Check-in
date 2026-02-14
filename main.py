@@ -26,7 +26,7 @@ white = "#EAEFEF"
 dark_green = "#628141"
 light_green = "#BBC863"
 dark_red = "#D02752"
-bright_red = "#E4B4C0"
+light_red = "#E4B4C0"
 dark_blue = "#1C4D8D"
 medium_blue = "#4988C4"
 light_blue = "#BDE8F5"
@@ -44,7 +44,8 @@ class MainWindow(QMainWindow):
 
         self.time_started = False
         self.selected_task_arr = []
-        
+
+
 
         self.timer_obj = QTimer(self)
         self.time = QTime(0,0,0)
@@ -77,6 +78,9 @@ class MainWindow(QMainWindow):
         self.time_label = QLabel("No Time Clocked")
         #self.time_label.setStyleSheet("background-color: {dark_blue}; color: {light_blue}; font-size: 20px; font-weight: bold; border-radius: 8px;")
 
+        self.error_message = QLabel("")
+        self.error_message.setStyleSheet("color: {dark_red};  font-weight: bold;")
+
         layout.addWidget(label, alignment=Qt.AlignCenter)
         layout.addWidget(add_topic_button, alignment=Qt.AlignCenter)
         #layout.addWidget(checkbox, alignment=Qt.AlignCenter)
@@ -85,6 +89,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(timer_stop_button, alignment=Qt.AlignCenter)
         layout.addWidget(timer_reset_button, alignment=Qt.AlignCenter)
         layout.addWidget(self.time_label, alignment=Qt.AlignCenter)
+        layout.addWidget(self.error_message, alignment=Qt.AlignCenter)
         
         self.setCentralWidget(container)
 
@@ -114,11 +119,14 @@ class MainWindow(QMainWindow):
     def timer_event(self):
         self.time = self.time.addSecs(1)
         print(self.time.toString("hh:mm:ss"))
-        self.formatted_time= humanize.naturaldelta(dt.timedelta(hours=self.time.hour(), minutes=self.time.minute(), seconds=self.time.second()))
+        self.formatted_time = humanize.naturaldelta(dt.timedelta(hours=self.time.hour(), minutes=self.time.minute(), seconds=self.time.second()))
         self.time_label.setText(self.formatted_time)
 
     def handle_add_topic_button_click(self):
         self.text, self.ok = QInputDialog.getText(self, "Topic name", "Enter new topic name")
+        if self.text.casefold() in self.selected_task_arr:
+            self.update_error_message("Topic already added bruzz")
+            return
         if self.ok and self.text.strip():
             self.add_topic(self.text)
 
@@ -127,6 +135,8 @@ class MainWindow(QMainWindow):
         self.task_dropdown.addItem(topic)
         print(f"{topic} added to topics!")
 
+    def update_error_message(self, message):
+        self.error_message.setText(f"Error: {message}")
 
 
 app = QApplication(sys.argv)
